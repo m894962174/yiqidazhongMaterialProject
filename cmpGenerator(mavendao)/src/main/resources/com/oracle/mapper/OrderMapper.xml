@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oracle.dao.OrderMapper">
+  <resultMap id="BaseResultMap" type="com.oracle.vo.Order">
+    <id column="OrderId" jdbcType="INTEGER" property="orderid" />
+    <result column="OrderCode" jdbcType="VARCHAR" property="ordercode" />
+    <result column="OrderDate" jdbcType="DATE" property="orderdate" />
+    <result column="OrderFlag" jdbcType="VARCHAR" property="orderflag" />
+    <result column="OrderFlagName" jdbcType="VARCHAR" property="orderflagname" />
+  </resultMap>
+  <resultMap id="MyOwnResultMap" type="com.oracle.vo.Order">
+    <id column="OrderId" jdbcType="INTEGER" property="orderid" />
+    <result column="OrderCode" jdbcType="VARCHAR" property="ordercode" />
+    <result column="OrderDate" jdbcType="DATE" property="orderdate" />
+    <result column="OrderFlag" jdbcType="VARCHAR" property="orderflag" />
+    <result column="OrderFlagName" jdbcType="VARCHAR" property="orderflagname" />
+    <result column="OrderPartsCount" jdbcType="INTEGER" property="orderpartscount" />
+    <result column="PartsName" jdbcType="VARCHAR" property="partsname" />
+    <result column="PartsId" jdbcType="INTEGER" property="partsid" />
+    <!-- BUG:partsrepcount获取后为null,但查询语句正确 -->
+    <result column="PartsRepCount" jdbcType="INTEGER" property="partsrepcount" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    OrderId, OrderCode, OrderDate, OrderFlag
+  </sql>
+  <update id="updateOrderFlag">
+  	update biz_order set biz_order.OrderFlag=${orderflag}
+where biz_order.OrderCode=#{ordercode}
+  </update>
+  <select id="selectDetailId" resultType="int">
+  	select d.OrderDetailId from biz_orderdetail d 
+where OrderId=#{orderid}
+  </select>
+  <update id="updateOrder" >
+  	update biz_order o set o.OrderFlag=#{orderflag},o.OrderDate=#{orderdate}
+where o.OrderCode=#{ordercode}
+  </update>
+  <insert id="saveOrderdetail" >
+  	insert into biz_orderdetail value
+  	(null,#{partsid},#{orderid},#{orderpartscount})
+  </insert>
+  <select id="selectorderid" resultType="int">
+  	select orderid from biz_order where OrderCode=#{ordercode}
+  </select>
+  <insert id="saveOrder">
+  	insert into biz_order values(null,#{ordercode},#{orderdate},#{orderflag})
+  </insert>
+  <select id="selectordercode" resultType="string">
+  	SELECT OrderCode from biz_order where OrderCode=#{ordercode}
+  </select>
+  <select id="mySelectByPrimaryKey" resultMap="MyOwnResultMap">
+  	select my.PartsId,my.OrderCode,my.OrderDate,my.OrderFlag,my.OrderId,my.OrderPartsCount,my.PartsName,my.PartsReqCount,sc.`name` OrderFlagName from sys_code sc,(select mt1.PartsId,o.OrderId,OrderCode,OrderDate,OrderFlag,OrderPartsCount,mt1.PartsName,mt1.PartsReqCount
+from (select PartsName,PartsReqCount,p.PartsId from biz_parts p,biz_partsrepertory rp
+where p.PartsId=rp.PartsId) mt1,biz_order o,biz_orderdetail od
+where mt1.PartsId=od.PartsId and od.OrderId=o.OrderId) my
+where my.OrderFlag=sc.`code` and OrderId=#{orderid}
+  </select>
+  <select id="selectByordercode" resultType="string">
+  	select ordercode from biz_order
+  	where OrderCode = #{ordercode}
+  </select>
+  <select id="selectambiguous" resultMap="BaseResultMap">
+  	select <include refid="Base_Column_List"/>,c.`name` OrderFlagName from biz_order o,sys_code c 
+  	<where>
+  	o.OrderFlag=c.`code`
+  		<if test="ordercode !=''">and OrderCode like '%${ordercode}%'</if>
+  		<if test="orderdate !=''">and TO_DAYS(OrderDate)=TO_DAYS(#{orderdate})</if>
+  		<if test="orderflag !=''">and OrderFlag =#{orderflag}</if>
+  		
+  	</where>
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+  	select <include refid="Base_Column_List"/> 
+  	from biz_order
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from biz_order
+    where OrderId = #{orderid,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from biz_order
+    where OrderId = #{orderid,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.oracle.vo.Order">
+    insert into biz_order (OrderId, OrderCode, OrderDate, 
+      OrderFlag)
+    values (#{orderid,jdbcType=INTEGER}, #{ordercode,jdbcType=VARCHAR}, #{orderdate,jdbcType=DATE}, 
+      #{orderflag,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.oracle.vo.Order">
+    insert into biz_order
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="orderid != null">
+        OrderId,
+      </if>
+      <if test="ordercode != null">
+        OrderCode,
+      </if>
+      <if test="orderdate != null">
+        OrderDate,
+      </if>
+      <if test="orderflag != null">
+        OrderFlag,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="orderid != null">
+        #{orderid,jdbcType=INTEGER},
+      </if>
+      <if test="ordercode != null">
+        #{ordercode,jdbcType=VARCHAR},
+      </if>
+      <if test="orderdate != null">
+        #{orderdate,jdbcType=DATE},
+      </if>
+      <if test="orderflag != null">
+        #{orderflag,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.oracle.vo.Order">
+    update biz_order
+    <set>
+      <if test="ordercode != null">
+        OrderCode = #{ordercode,jdbcType=VARCHAR},
+      </if>
+      <if test="orderdate != null">
+        OrderDate = #{orderdate,jdbcType=DATE},
+      </if>
+      <if test="orderflag != null">
+        OrderFlag = #{orderflag,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where OrderId = #{orderid,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.oracle.vo.Order">
+    update biz_order
+    set OrderCode = #{ordercode,jdbcType=VARCHAR},
+      OrderDate = #{orderdate,jdbcType=DATE},
+      OrderFlag = #{orderflag,jdbcType=VARCHAR}
+    where OrderId = #{orderid,jdbcType=INTEGER}
+  </update>
+</mapper>

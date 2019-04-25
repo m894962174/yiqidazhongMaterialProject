@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oracle.dao.PartsRepBillMapper">
+  <resultMap id="BaseResultMap" type="com.oracle.vo.PartsRepBill">
+    <id column="billid" jdbcType="INTEGER" property="billid" />
+    <result column="billflag" jdbcType="VARCHAR" property="billflag" />
+    <result column="billtype" jdbcType="VARCHAR" property="billtype" />
+    <result column="partsid" jdbcType="INTEGER" property="partsid" />
+    <result column="billcount" jdbcType="INTEGER" property="billcount" />
+    <result column="billtime" jdbcType="TIMESTAMP" property="billtime" />
+    <result column="billuser" jdbcType="INTEGER" property="billuser" />
+     <result column="PartsName" jdbcType="VARCHAR" property="partsname" />
+     <result column="LoginName" jdbcType="VARCHAR" property="loginname" />
+     <result column="name" jdbcType="VARCHAR" property="name" />
+     <result column="name1" jdbcType="VARCHAR" property="name1" />
+  </resultMap>
+  
+  
+  <sql id="Base_Column_List">
+    billid, billflag, billtype, partsid, billcount, billtime, billuser
+  </sql>
+  <select id="selectambiguous" resultMap="BaseResultMap">
+  	select billid,c.`name`, billflag, billtype,r.PartsId, billcount, billtime, billuser,u.LoginName,PartsName,t.name name1
+  	from biz_partsrepbill r,biz_parts p,sys_code c,sys_user u,(select `name`,code from sys_code where type='io') t
+  	where r.PartsId=p.PartsId and r.billtype=c.`code` and u.UserId=r.billuser and t.`code`=billflag
+  	<if test="billflag!=''">
+  		 and billflag = #{billflag}	<!-- 此处BUG: billflag参数已传来，但进不去if条件 -->
+  	</if>
+  	<if test="billtype!=''">
+  		and billtype=#{billtype}
+  	</if>
+  	<if test="partsname!=''">
+  		and PartsName like '%${partsname}%'
+  	</if>
+  	<if test="billtime != ''">
+  		and TO_DAYS(billtime) = TO_DAYS(#{billtime})
+  	</if>
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+  	select billid, billflag, billtype,r.PartsId, billcount, billtime, billuser,PartsName
+  	from biz_partsrepbill r,biz_parts p
+  	where r.PartsId=p.PartsId
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from biz_partsrepbill
+    where billid = #{billid,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from biz_partsrepbill
+    where billid = #{billid,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.oracle.vo.PartsRepBill">
+    insert into biz_partsrepbill (billid, billflag, billtype, 
+      partsid, billcount, billtime, 
+      billuser)
+    values (#{billid,jdbcType=INTEGER}, #{billflag,jdbcType=VARCHAR}, #{billtype,jdbcType=VARCHAR}, 
+      #{partsid,jdbcType=INTEGER}, #{billcount,jdbcType=INTEGER}, #{billtime,jdbcType=TIMESTAMP}, 
+      #{billuser,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.oracle.vo.PartsRepBill">
+    insert into biz_partsrepbill
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="billid != null">
+        billid,
+      </if>
+      <if test="billflag != null">
+        billflag,
+      </if>
+      <if test="billtype != null">
+        billtype,
+      </if>
+      <if test="partsid != null">
+        partsid,
+      </if>
+      <if test="billcount != null">
+        billcount,
+      </if>
+      <if test="billtime != null">
+        billtime,
+      </if>
+      <if test="billuser != null">
+        billuser,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="billid != null">
+        #{billid,jdbcType=INTEGER},
+      </if>
+      <if test="billflag != null">
+        #{billflag,jdbcType=VARCHAR},
+      </if>
+      <if test="billtype != null">
+        #{billtype,jdbcType=VARCHAR},
+      </if>
+      <if test="partsid != null">
+        #{partsid,jdbcType=INTEGER},
+      </if>
+      <if test="billcount != null">
+        #{billcount,jdbcType=INTEGER},
+      </if>
+      <if test="billtime != null">
+        #{billtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="billuser != null">
+        #{billuser,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.oracle.vo.PartsRepBill">
+    update biz_partsrepbill
+    <set>
+      <if test="billflag != null">
+        billflag = #{billflag,jdbcType=VARCHAR},
+      </if>
+      <if test="billtype != null">
+        billtype = #{billtype,jdbcType=VARCHAR},
+      </if>
+      <if test="partsid != null">
+        partsid = #{partsid,jdbcType=INTEGER},
+      </if>
+      <if test="billcount != null">
+        billcount = #{billcount,jdbcType=INTEGER},
+      </if>
+      <if test="billtime != null">
+        billtime = #{billtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="billuser != null">
+        billuser = #{billuser,jdbcType=INTEGER},
+      </if>
+    </set>
+    where billid = #{billid,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.oracle.vo.PartsRepBill">
+    update biz_partsrepbill
+    set billflag = #{billflag,jdbcType=VARCHAR},
+      billtype = #{billtype,jdbcType=VARCHAR},
+      partsid = #{partsid,jdbcType=INTEGER},
+      billcount = #{billcount,jdbcType=INTEGER},
+      billtime = #{billtime,jdbcType=TIMESTAMP},
+      billuser = #{billuser,jdbcType=INTEGER}
+    where billid = #{billid,jdbcType=INTEGER}
+  </update>
+</mapper>
